@@ -1,0 +1,152 @@
+/* ===================================
+   CSS PERSONALIZADO - TEMA DE VEÍCULOS
+   =================================== */
+
+/* Cores personalizadas */
+:root {
+    --car-blue: #1E3A8A;
+    --car-green: #059669;
+    --car-red: #DC2626;
+}
+
+/* HEADER */
+header {
+    background: linear-gradient(90deg, var(--car-blue), var(--car-green));
+}
+
+/* Botões */
+button {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Botões de cores */
+.bg-car-blue {
+    background-color: var(--car-blue);
+}
+
+.bg-car-blue:hover {
+    background-color: #162A6B;
+}
+
+.bg-car-green {
+    background-color: var(--car-green);
+}
+
+.bg-car-green:hover {
+    background-color: #047857;
+}
+
+.bg-car-red {
+    background-color: var(--car-red);
+}
+
+.bg-car-red:hover {
+    background-color: #B91C1C;
+}
+
+/* Inputs e textarea */
+input, textarea {
+    border: 1px solid #D1D5DB;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    color: #1F2937;
+    background-color: #FFFFFF;
+    transition: all 0.3s ease;
+}
+
+input:focus, textarea:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.2);
+    border-color: var(--car-blue);
+}
+
+/* Cards de veículo */
+#grid-veiculos .veiculo-card {
+    background: #FFFFFF;
+    border: 1px solid #E5E7EB;
+    border-radius: 0.75rem;
+    padding: 1rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+#grid-veiculos .veiculo-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    border-color: var(--car-blue);
+}
+
+/* Notificações */
+#notificacoes .notificacao {
+    min-width: 300px;
+    max-width: 400px;
+    backdrop-filter: blur(10px);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    color: white;
+    font-weight: bold;
+}
+
+.notificacao-sucesso {
+    background: linear-gradient(135deg, rgba(5,150,105,0.9), rgba(16,185,129,0.9));
+}
+
+.notificacao-erro {
+    background: linear-gradient(135deg, rgba(239,68,68,0.9), rgba(220,38,38,0.9));
+}
+
+.notificacao-info {
+    background: linear-gradient(135deg, rgba(29,78,216,0.9), rgba(59,130,246,0.9));
+}
+
+/* Modal */
+#modal-confirmacao .bg-white {
+    background-color: #FFFFFF;
+    border-radius: 1rem;
+    padding: 1.5rem;
+}
+
+/* Status de conexão */
+#status-conexao {
+    border: 1px solid #D1D5DB;
+    border-radius: 0.75rem;
+    padding: 1rem;
+}
+
+/* Loading spinner */
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Tooltip */
+.tooltip::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.8);
+    color: white;
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    z-index: 1000;
+}
+
+.tooltip:hover::after {
+    opacity: 1;
+}
