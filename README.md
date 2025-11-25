@@ -16,3 +16,23 @@ No terminal, execute o seguinte comando para navegar até a pasta do backend:
 
 ```bash
 cd backend
+```
+Este comando irá direcionar você para o diretório onde os arquivos do backend estão localizados.
+
+
+##4. Instale a Dependência do projeto utilizando o seguinte comando:
+```
+npm install
+```
+Isso irá baixar e instalar todas as bibliotecas necessárias para rodar o backend.
+
+
+##5. Inicie o Servidor
+
+Após a instalação das dependências, inicie o servidor com o comando:
+```
+npm start
+```
+Esse comando vai rodar o servidor do backend e, geralmente, ele ficará disponível em http://localhost:3000
+
+Agora seu backend está em funcionamento!
