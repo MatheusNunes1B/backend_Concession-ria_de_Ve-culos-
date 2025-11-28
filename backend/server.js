@@ -1,23 +1,14 @@
-// ===================================
-// SERVIDOR BACKEND - SUPABASE CONCESSIONÁRIA
-// ===================================
 const express = require('express');
 const cors = require('cors');
 const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config();
 
-// ===============================
-// EXPRESS
-// ===============================
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
 
-// ===============================
-// SUPABASE
-// ===============================
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_ANON_KEY;
 
@@ -29,11 +20,6 @@ if (!supabaseUrl || !supabaseKey) {
 const supabase = createClient(supabaseUrl, supabaseKey);
 console.log('✅ Conexão com Supabase OK!');
 
-// ===============================
-// ROTAS
-// ===============================
-
-// ROTA DE TESTE
 app.get('/api/test', (req, res) => {
     res.json({
         success: true,
@@ -42,9 +28,6 @@ app.get('/api/test', (req, res) => {
     });
 });
 
-// =============================================
-// GET /api/veiculos - Lista todos os veículos
-// =============================================
 app.get('/api/veiculos', async (req, res) => {
     try {
         console.log('📋 Buscando veículos...');
@@ -74,9 +57,6 @@ app.get('/api/veiculos', async (req, res) => {
     }
 });
 
-// ====================================================
-// POST /api/veiculos - Cadastra novo veículo
-// ====================================================
 app.post('/api/veiculos', async (req, res) => {
     try {
         const { modelo, marca, ano, preco, descricao } = req.body;
@@ -138,9 +118,6 @@ app.post('/api/veiculos', async (req, res) => {
     }
 });
 
-// ==========================================================
-// DELETE /api/veiculos/:id - Exclui veículo pelo ID
-// ==========================================================
 app.delete('/api/veiculos/:id', async (req, res) => {
     try {
         const { id } = req.params;
@@ -187,14 +164,8 @@ app.delete('/api/veiculos/:id', async (req, res) => {
     }
 });
 
-// ===============================
-// ROTA DE ARQUIVOS ESTÁTICOS
-// ===============================
 app.use(express.static('../frontend'));
 
-// ===============================
-// ROTA 404
-// ===============================
 app.use('*', (req, res) => {
     res.status(404).json({
         success: false,
@@ -208,9 +179,6 @@ app.use('*', (req, res) => {
     });
 });
 
-// ===============================
-// INICIAR SERVIDOR
-// ===============================
 app.listen(PORT, () => {
     console.log('🚗 SERVIDOR CONCESSIONÁRIA RODANDO!');
     console.log(`📡 http://localhost:${PORT}`);

@@ -1,6 +1,3 @@
-// ===============================
-// ELEMENTOS
-// ===============================
 const formVeiculo = document.getElementById('form-veiculo');
 const btnCadastrar = document.getElementById('btn-cadastrar');
 const btnTexto = document.getElementById('btn-texto');
@@ -19,9 +16,6 @@ const btnConfirmar = document.getElementById('btn-confirmar');
 
 let veiculoParaExcluir = null;
 
-// ===============================
-// FUNÇÃO PARA BUSCAR VEÍCULOS
-// ===============================
 async function buscarVeiculos() {
     loadingVeiculos.classList.remove('hidden');
     gridVeiculos.classList.add('hidden');
@@ -62,7 +56,6 @@ async function buscarVeiculos() {
             gridVeiculos.appendChild(card);
         });
 
-        // Ativar botões de exclusão
         document.querySelectorAll('.btn-excluir').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 veiculoParaExcluir = btn.getAttribute('data-id');
@@ -83,9 +76,6 @@ async function buscarVeiculos() {
     }
 }
 
-// ===============================
-// CADASTRAR VEÍCULO
-// ===============================
 formVeiculo.addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -123,9 +113,6 @@ formVeiculo.addEventListener('submit', async (e) => {
     }
 });
 
-// ===============================
-// CONFIRMAR EXCLUSÃO
-// ===============================
 btnConfirmar.addEventListener('click', async () => {
     if (!veiculoParaExcluir) return;
 
@@ -148,18 +135,10 @@ btnConfirmar.addEventListener('click', async () => {
     }
 });
 
-// CANCELAR EXCLUSÃO
 btnCancelar.addEventListener('click', () => {
     veiculoParaExcluir = null;
     modalConfirmacao.classList.add('hidden');
 });
 
-// ===============================
-// ATUALIZAR LISTA
-// ===============================
 document.getElementById('btn-atualizar').addEventListener('click', buscarVeiculos);
-
-// ===============================
-// CARREGAR VEÍCULOS AO INICIAR
-// ===============================
 document.addEventListener('DOMContentLoaded', buscarVeiculos);
