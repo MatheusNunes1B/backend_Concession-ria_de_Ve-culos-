@@ -251,11 +251,12 @@ app.use('*', (req, res) => {
         success: false,
         message: 'Rota não encontrada',
         routes: [
-            'GET /api/test',
-            'GET /api/veiculos',
-            'POST /api/veiculos',
-            'DELETE /api/veiculos/:id'
-        ]
+    'GET /api/test',
+    'GET /api/veiculos',
+    'POST /api/veiculos',
+    'PUT /api/veiculos/:id',
+    'DELETE /api/veiculos/:id'
+]
     });
 });
 
