@@ -20,8 +20,9 @@ if (!supabaseUrl || !supabaseKey) {
 const supabase = createClient(supabaseUrl, supabaseKey);
 console.log('✅ Conexão com Supabase OK!');
 
+// ==================== ROTAS ====================
 
-
+// Rota de teste
 app.get('/api/test', (req, res) => {
     res.json({
         success: true,
@@ -30,8 +31,7 @@ app.get('/api/test', (req, res) => {
     });
 });
 
-
-
+// Listar todos os veículos
 app.get('/api/veiculos', async (req, res) => {
     try {
         const { data, error } = await supabase
@@ -41,23 +41,13 @@ app.get('/api/veiculos', async (req, res) => {
 
         if (error) throw error;
 
-        res.json({
-            success: true,
-            total: data.length,
-            data
-        });
-
+        res.json({ success: true, total: data.length, data });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: 'Erro ao buscar veículos',
-            error: error.message
-        });
+        res.status(500).json({ success: false, message: 'Erro ao buscar veículos', error: error.message });
     }
 });
 
-
-
+// Buscar veículo por ID
 app.get('/api/veiculos/:id', async (req, res) => {
     try {
         const { id } = req.params;
@@ -70,23 +60,21 @@ app.get('/api/veiculos/:id', async (req, res) => {
             .from('veiculos')
             .select('*')
             .eq('id', parseInt(id))
-            .single();
+            .maybeSingle(); // retorna null se não existir
 
-        if (error?.code === "PGRST116") {
+        if (!data) {
             return res.status(404).json({ success: false, message: "Veículo não encontrado" });
         }
 
         if (error) throw error;
 
         res.json({ success: true, data });
-
     } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
+        res.status(500).json({ success: false, message: "Erro ao buscar veículo", error: error.message });
     }
 });
 
-
-
+// Cadastrar veículo
 app.post('/api/veiculos', async (req, res) => {
     try {
         const { modelo, marca, ano, preco, descricao } = req.body;
@@ -112,37 +100,25 @@ app.post('/api/veiculos', async (req, res) => {
 
         if (error) throw error;
 
-        res.status(201).json({
-            success: true,
-            message: 'Veículo cadastrado com sucesso!',
-            data: data[0]
-        });
-
+        res.status(201).json({ success: true, message: 'Veículo cadastrado com sucesso!', data: data[0] });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
 });
 
-
-
+// Atualizar veículo
 app.put('/api/veiculos/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const { modelo, marca, ano, preco, descricao } = req.body;
 
-        if (isNaN(id)) {
-            return res.status(400).json({ success: false, message: "ID inválido" });
-        }
-
+        if (isNaN(id)) return res.status(400).json({ success: false, message: "ID inválido" });
 
         if (!modelo || !marca || !ano || !preco) {
-            return res.status(400).json({
-                success: false,
-                message: 'Campos obrigatórios faltando: modelo, preco, marca, ano'
-            });
+            return res.status(400).json({ success: false, message: 'Campos obrigatórios faltando: modelo, preco, marca, ano' });
         }
 
-        const campos = {
+        const camposAtualizados = {
             modelo: modelo.trim(),
             marca: marca.trim(),
             ano: parseInt(ano),
@@ -153,70 +129,51 @@ app.put('/api/veiculos/:id', async (req, res) => {
 
         const { data, error } = await supabase
             .from('veiculos')
-            .update(campos)
+            .update(camposAtualizados)
             .eq('id', parseInt(id))
             .select();
 
-        if (data.length === 0) {
-            return res.status(404).json({
-                success: false,
-                message: "Veículo não encontrado"
-            });
-        }
-
         if (error) throw error;
 
-        res.json({
-            success: true,
-            message: "Veículo atualizado com sucesso!",
-            data: data[0]
-        });
+        if (!data || data.length === 0) {
+            return res.status(404).json({ success: false, message: "Veículo não encontrado" });
+        }
 
+        res.json({ success: true, message: "Veículo atualizado com sucesso!", data: data[0] });
     } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
+        res.status(500).json({ success: false, message: "Erro ao atualizar veículo", error: error.message });
     }
 });
 
-
-
+// Deletar veículo
 app.delete('/api/veiculos/:id', async (req, res) => {
     try {
         const { id } = req.params;
 
-        if (isNaN(id)) {
-            return res.status(400).json({ success: false, message: "ID inválido" });
-        }
+        if (isNaN(id)) return res.status(400).json({ success: false, message: "ID inválido" });
 
         const { data, error } = await supabase
             .from('veiculos')
             .delete()
-            .eq('id', id)
+            .eq('id', parseInt(id))
             .select();
-
-        if (data.length === 0) {
-            return res.status(404).json({
-                success: false,
-                message: 'Veículo não encontrado'
-            });
-        }
 
         if (error) throw error;
 
-        res.json({
-            success: true,
-            message: 'Veículo excluído com sucesso!',
-            data: data[0]
-        });
+        if (!data || data.length === 0) {
+            return res.status(404).json({ success: false, message: 'Veículo não encontrado' });
+        }
 
+        res.json({ success: true, message: 'Veículo excluído com sucesso!', data: data[0] });
     } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
+        res.status(500).json({ success: false, message: "Erro ao excluir veículo", error: error.message });
     }
 });
 
-
-
+// Servir frontend
 app.use(express.static('../frontend'));
 
+// Catch-all 404
 app.use('*', (req, res) => {
     res.status(404).json({
         success: false,
@@ -232,8 +189,7 @@ app.use('*', (req, res) => {
     });
 });
 
-
-
+// Start server
 app.listen(PORT, () => {
     console.log('🚗 SERVIDOR CONCESSIONÁRIA RODANDO!');
     console.log(`📡 http://localhost:${PORT}`);
