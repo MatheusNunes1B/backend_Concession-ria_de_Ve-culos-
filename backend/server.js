@@ -20,6 +20,8 @@ if (!supabaseUrl || !supabaseKey) {
 const supabase = createClient(supabaseUrl, supabaseKey);
 console.log('✅ Conexão com Supabase OK!');
 
+
+
 app.get('/api/test', (req, res) => {
     res.json({
         success: true,
@@ -28,23 +30,16 @@ app.get('/api/test', (req, res) => {
     });
 });
 
+
+
 app.get('/api/veiculos', async (req, res) => {
     try {
-        console.log('📋 Buscando veículos...');
-
         const { data, error } = await supabase
             .from('veiculos')
             .select('*')
             .order('created_at', { ascending: false });
 
-        if (error) {
-            console.error('❌ Erro ao buscar veículos:', error);
-            return res.status(400).json({
-                success: false,
-                message: 'Erro ao buscar veículos',
-                error: error.message
-            });
-        }
+        if (error) throw error;
 
         res.json({
             success: true,
@@ -53,109 +48,73 @@ app.get('/api/veiculos', async (req, res) => {
         });
 
     } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
+        res.status(500).json({
+            success: false,
+            message: 'Erro ao buscar veículos',
+            error: error.message
+        });
     }
 });
 
-app.post('/api/veiculos', async (req, res) => {
+
+
+app.get('/api/veiculos/:id', async (req, res) => {
     try {
-        const { modelo, marca, ano, preco, descricao } = req.body;
+        const { id } = req.params;
 
-        console.log('➕ Cadastrando veículo:', req.body);
-
-        // validações
-        if (!modelo || !marca || !ano || !preco) {
-            return res.status(400).json({
-                success: false,
-                message: 'Campos obrigatórios: modelo, marca, ano e preco'
-            });
-        }
-
-        if (isNaN(preco) || preco <= 0) {
-            return res.status(400).json({
-                success: false,
-                message: 'Preço inválido'
-            });
-        }
-
-        if (isNaN(ano) || ano < 1950 || ano > 2050) {
-            return res.status(400).json({
-                success: false,
-                message: 'Ano inválido'
-            });
+        if (isNaN(id)) {
+            return res.status(400).json({ success: false, message: "ID inválido" });
         }
 
         const { data, error } = await supabase
             .from('veiculos')
-            .insert([
-                {
-                    modelo: modelo.trim(),
-                    marca: marca.trim(),
-                    ano: parseInt(ano),
-                    preco: parseFloat(preco),
-                    descricao: descricao ? descricao.trim() : null
-                }
-            ])
-            .select();
+            .select('*')
+            .eq('id', parseInt(id))
+            .single();
 
-        if (error) {
-            console.error('❌ Erro ao cadastrar veículo:', error);
-            return res.status(400).json({
-                success: false,
-                message: 'Erro ao cadastrar veículo',
-                error: error.message
-            });
+        if (error?.code === "PGRST116") {
+            return res.status(404).json({ success: false, message: "Veículo não encontrado" });
         }
 
-        res.status(201).json({
-            success: true,
-            message: 'Veículo cadastrado com sucesso!',
-            data: data[0]
-        });
+        if (error) throw error;
+
+        res.json({ success: true, data });
 
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
 });
 
-app.delete('/api/veiculos/:id', async (req, res) => {
+
+
+app.post('/api/veiculos', async (req, res) => {
     try {
-        const { id } = req.params;
+        const { modelo, marca, ano, preco, descricao } = req.body;
 
-        console.log('🗑️ Excluindo veículo ID:', id);
-
-        if (isNaN(id)) {
+        if (!modelo || !marca || !ano || !preco) {
             return res.status(400).json({
                 success: false,
-                message: 'ID inválido'
+                message: 'Campos obrigatórios: modelo, marca, ano, preco'
             });
         }
 
         const { data, error } = await supabase
             .from('veiculos')
-            .delete()
-            .eq('id', parseInt(id))
+            .insert([{
+                modelo: modelo.trim(),
+                marca: marca.trim(),
+                ano: parseInt(ano),
+                preco: parseFloat(preco),
+                descricao: descricao ? descricao.trim() : null,
+                updated_at: new Date().toISOString()
+            }])
             .select();
 
-        if (error) {
-            console.error('❌ Erro ao excluir veículo:', error);
-            return res.status(400).json({
-                success: false,
-                message: 'Erro ao excluir veículo',
-                error: error.message
-            });
-        }
+        if (error) throw error;
 
-        if (data.length === 0) {
-            return res.status(404).json({
-                success: false,
-                message: 'Veículo não encontrado'
-            });
-        }
-
-        res.json({
+        res.status(201).json({
             success: true,
-            message: 'Veículo excluído com sucesso!',
+            message: 'Veículo cadastrado com sucesso!',
             data: data[0]
         });
 
@@ -169,60 +128,70 @@ app.delete('/api/veiculos/:id', async (req, res) => {
 app.put('/api/veiculos/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const { modelo, preco, descricao, marca, ano, created_at, updated_at } = req.body;
+        const { modelo, marca, ano, preco, descricao } = req.body;
 
-        // valida ID
         if (isNaN(id)) {
+            return res.status(400).json({ success: false, message: "ID inválido" });
+        }
+
+
+        if (!modelo || !marca || !ano || !preco) {
             return res.status(400).json({
                 success: false,
-                message: 'ID inválido'
+                message: 'Campos obrigatórios faltando: modelo, preco, marca, ano'
             });
         }
 
-        // valida campos obrigatórios
-        if (!modelo || !preco || !marca || !ano || !updated_at) {
-            return res.status(400).json({
-                success: false,
-                message: 'Campos obrigatórios faltando: modelo, preco, marca, ano e updated_at'
-            });
-        }
-
-        if (isNaN(preco) || preco <= 0) {
-            return res.status(400).json({ success: false, message: 'Preço inválido' });
-        }
-
-        if (isNaN(ano) || ano < 1950 || ano > 2050) {
-            return res.status(400).json({ success: false, message: 'Ano inválido' });
-        }
-
-        const camposParaAtualizar = {
+        const campos = {
             modelo: modelo.trim(),
-            preco: parseFloat(preco),
-            descricao: descricao ? descricao.trim() : null,
             marca: marca.trim(),
             ano: parseInt(ano),
-            updated_at
+            preco: parseFloat(preco),
+            descricao: descricao ? descricao.trim() : null,
+            updated_at: new Date().toISOString()
         };
-
-        // só envia created_at se você REALMENTE quer permitir que seja alterado
-        if (created_at) camposParaAtualizar.created_at = created_at;
-
-        console.log('✏️ Atualizando veículo:', camposParaAtualizar);
 
         const { data, error } = await supabase
             .from('veiculos')
-            .update(camposParaAtualizar)
+            .update(campos)
             .eq('id', parseInt(id))
             .select();
 
-        if (error) {
-            console.error('❌ Erro ao atualizar veículo:', error);
-            return res.status(400).json({
+        if (data.length === 0) {
+            return res.status(404).json({
                 success: false,
-                message: 'Erro ao atualizar veículo',
-                error: error.message
+                message: "Veículo não encontrado"
             });
         }
+
+        if (error) throw error;
+
+        res.json({
+            success: true,
+            message: "Veículo atualizado com sucesso!",
+            data: data[0]
+        });
+
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+
+
+app.delete('/api/veiculos/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        if (isNaN(id)) {
+            return res.status(400).json({ success: false, message: "ID inválido" });
+        }
+
+        const { data, error } = await supabase
+            .from('veiculos')
+            .delete()
+            .eq('id', id)
+            .select();
 
         if (data.length === 0) {
             return res.status(404).json({
@@ -231,9 +200,11 @@ app.put('/api/veiculos/:id', async (req, res) => {
             });
         }
 
+        if (error) throw error;
+
         res.json({
             success: true,
-            message: 'Veículo atualizado com sucesso!',
+            message: 'Veículo excluído com sucesso!',
             data: data[0]
         });
 
@@ -251,14 +222,17 @@ app.use('*', (req, res) => {
         success: false,
         message: 'Rota não encontrada',
         routes: [
-    'GET /api/test',
-    'GET /api/veiculos',
-    'POST /api/veiculos',
-    'PUT /api/veiculos/:id',
-    'DELETE /api/veiculos/:id'
-]
+            'GET /api/test',
+            'GET /api/veiculos',
+            'GET /api/veiculos/:id',
+            'POST /api/veiculos',
+            'PUT /api/veiculos/:id',
+            'DELETE /api/veiculos/:id'
+        ]
     });
 });
+
+
 
 app.listen(PORT, () => {
     console.log('🚗 SERVIDOR CONCESSIONÁRIA RODANDO!');
