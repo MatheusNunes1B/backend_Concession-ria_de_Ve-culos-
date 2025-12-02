@@ -164,6 +164,86 @@ app.delete('/api/veiculos/:id', async (req, res) => {
     }
 });
 
+
+
+app.put('/api/veiculos/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { modelo, preco, descricao, marca, ano, created_at, updated_at } = req.body;
+
+        // valida ID
+        if (isNaN(id)) {
+            return res.status(400).json({
+                success: false,
+                message: 'ID inválido'
+            });
+        }
+
+        // valida campos obrigatórios
+        if (!modelo || !preco || !marca || !ano || !updated_at) {
+            return res.status(400).json({
+                success: false,
+                message: 'Campos obrigatórios faltando: modelo, preco, marca, ano e updated_at'
+            });
+        }
+
+        if (isNaN(preco) || preco <= 0) {
+            return res.status(400).json({ success: false, message: 'Preço inválido' });
+        }
+
+        if (isNaN(ano) || ano < 1950 || ano > 2050) {
+            return res.status(400).json({ success: false, message: 'Ano inválido' });
+        }
+
+        const camposParaAtualizar = {
+            modelo: modelo.trim(),
+            preco: parseFloat(preco),
+            descricao: descricao ? descricao.trim() : null,
+            marca: marca.trim(),
+            ano: parseInt(ano),
+            updated_at
+        };
+
+        // só envia created_at se você REALMENTE quer permitir que seja alterado
+        if (created_at) camposParaAtualizar.created_at = created_at;
+
+        console.log('✏️ Atualizando veículo:', camposParaAtualizar);
+
+        const { data, error } = await supabase
+            .from('veiculos')
+            .update(camposParaAtualizar)
+            .eq('id', parseInt(id))
+            .select();
+
+        if (error) {
+            console.error('❌ Erro ao atualizar veículo:', error);
+            return res.status(400).json({
+                success: false,
+                message: 'Erro ao atualizar veículo',
+                error: error.message
+            });
+        }
+
+        if (data.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Veículo não encontrado'
+            });
+        }
+
+        res.json({
+            success: true,
+            message: 'Veículo atualizado com sucesso!',
+            data: data[0]
+        });
+
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+
+
 app.use(express.static('../frontend'));
 
 app.use('*', (req, res) => {
